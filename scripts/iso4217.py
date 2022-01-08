@@ -38,8 +38,6 @@ currency_country_name_map = {
     u"SERBIA ": "SERBIA",
     u"PALESTINIAN TERRITORY, OCCUPIED": "PALESTINE, STATE OF",
     u"Vatican City State (HOLY SEE)": "HOLY SEE (VATICAN CITY STATE)",
-    u"VIRGIN ISLANDS (BRITISH)": "VIRGIN ISLANDS, BRITISH",
-    u"VIRGIN ISLANDS (U.S.)": "VIRGIN ISLANDS, U.S.",
     u"MEMBER COUNTRIES OF THE AFRICAN DEVELOPMENT BANK GROUP": None,
     u"INTERNATIONAL MONETARY FUND (IMF)": None,
     u"SISTEMA UNITARIO DE COMPENSACION REGIONAL DE PAGOS \"SUCRE\"": None,
@@ -70,7 +68,6 @@ currency_country_name_map = {
     u"WALLIS AND FUTUNA": u"Wallis and Futuna Islands",
     u"VIRGIN ISLANDS (U.S.)": u"UNITED STATES VIRGIN ISLANDS",
     u"VIRGIN ISLANDS (BRITISH)": u"BRITISH VIRGIN ISLANDS",
-
     u"CONGO (THE DEMOCRATIC REPUBLIC OF THE)": "DEMOCRATIC REPUBLIC OF THE CONGO",
     u"KOREA (THE DEMOCRATIC PEOPLE’S REPUBLIC OF)": u"DEMOCRATIC PEOPLE'S REPUBLIC OF KOREA",
     u"KOREA (THE REPUBLIC OF)": u"REPUBLIC OF KOREA",
@@ -89,14 +86,12 @@ def process_element(country):
         if currency_tag_map[currency_tag.tag] ==\
                 "ISO4217-currency_additional_info":
             break
-        # skip 'same day', 'next day', etc variations
         elif (currency_tag_map[currency_tag.tag] == "ISO4217-currency_name")\
                 and (len(currency_tag.items()) > 0):
             if currency_tag.items()[0][0] == 'IsFund':
                 break
         else:
-            currency_dict.update({
-                currency_tag_map[currency_tag.tag]: currency_tag.text})
+            currency_dict[currency_tag_map[currency_tag.tag]] = currency_tag.text
             # remove random line breaks, etc
             currency_name = utils.clean(currency_dict['ISO4217-currency_country_name']).upper().replace(' (THE)', '')
             if currency_name is not None:

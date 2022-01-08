@@ -21,24 +21,20 @@ territories = {k: v for k, v in content_en.items() if
 map(lambda discard: territories.pop(discard, None), ['ZZ', 'EZ', 'EU'])
 
 # sort as tuples so that XX-alt-short will come after XX
-territories = sorted([(k, v) for k, v in territories.iteritems()])
+territories = sorted(list(territories.iteritems()))
 
 cldr = {}
 for territory in territories:
     name = territory[0]
 
-    # use -alt-short if it exists
-    if "-alt-short" in territory[0]:
+    if "-alt-short" in name:
         name = name.replace("-alt-short", "")
         cldr.pop(name, None)
 
-    cldr.update({name: territory[1]})
-
-
-
+    cldr[name] = territory[1]
 header = ['ISO3166-1-Alpha-2', 'CLDR display name']
 with open('data/cldr.csv', 'wb') as csv_file:
     csv_writer = utils.UnicodeWriter(csv_file)
     csv_writer.writerow(header)
-    for row in [(k, v) for k, v in cldr.iteritems()]:
+    for row in list(cldr.iteritems()):
         csv_writer.writerow(row)
