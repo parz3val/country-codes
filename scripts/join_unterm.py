@@ -69,9 +69,8 @@ output_filename = "data/country-codes-joined.json"
 
 for country in keyed:
     for k, v in country.items():
-        if k in ['M49', 'ISO3166-1-numeric']:
-            if v not in [None, 'null', '']:
-                country[k] = str(int(v)).zfill(3)
+        if k in ['M49', 'ISO3166-1-numeric'] and v not in [None, 'null', '']:
+            country[k] = str(int(v)).zfill(3)
 
 f = open(output_filename, mode='w')
 stream = codecs.getwriter('utf8')(f)

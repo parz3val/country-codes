@@ -34,19 +34,13 @@ def capitalize_country_name(name):
 
         if w.startswith('('):
             w = w.replace('(', '')
-            if w in always_lower:
-                w = w.lower()
-            else:
-                w = w.capitalize()
+            w = w.lower() if w in always_lower else w.capitalize()
             cap_list.append('(' + w)
             continue
 
         if w[-1] == ')':
             w = w.replace(')', '')
-            if w in always_lower:
-                w = w.lower()
-            else:
-                w = w.capitalize()
+            w = w.lower() if w in always_lower else w.capitalize()
             cap_list.append(w + ')')
             continue
 
@@ -55,8 +49,7 @@ def capitalize_country_name(name):
             continue
         cap_list.append(w.capitalize())
 
-    capitalized = " ".join(cap_list)
-    return capitalized
+    return " ".join(cap_list)
 
 
 def process_statoids_row(tr):
@@ -65,37 +58,39 @@ def process_statoids_row(tr):
         if len(td.getchildren()) == 0:
             row.append(td.text_content())
             continue
-        if len(td.keys()) > 0:
-            if td.get('colspan') is not None:
-                # if a cell is taking up more than one column,
-                # append the same number of blanks to the row
-                assert td.get('colspan').isdigit()
-                for col in xrange(int(td.get('colspan'))):
-                    row.append('')
-                continue
-        if len(td.getchildren()) > 1:
-            if td.find('.//br') is not None:
-                if ((len(row) > 1) and (row[1] == "DO")):
-                    # TIL dominican republic has three dialing codes
-                    # td.text_content() is '1-8091-8291-849'
-                    # so split into list of 5 chars each and join with commas
-                    row.append(','.join(map(''.join,
-                                            zip(*[iter(td.text_content())]*5))))
-                    continue
-        if ((len(row) > 1) and (row[1] in ["SH", "RS"])):
-            # Saint Helena and Serbia dial cells have anchors to footnotes
-            # so just append the number
-            if td.text_content()[:3].isdigit():
-                code = td.text_content().split(' ')[0]
-                row.append(code)
-                continue
+        if len(td.keys()) > 0 and td.get('colspan') is not None:
+            # if a cell is taking up more than one column,
+            # append the same number of blanks to the row
+            assert td.get('colspan').isdigit()
+            for _ in xrange(int(td.get('colspan'))):
+                row.append('')
+            continue
+        if (
+            len(td.getchildren()) > 1
+            and td.find('.//br') is not None
+            and ((len(row) > 1) and (row[1] == "DO"))
+        ):
+            # TIL dominican republic has three dialing codes
+            # td.text_content() is '1-8091-8291-849'
+            # so split into list of 5 chars each and join with commas
+            row.append(','.join(map(''.join,
+                                    zip(*[iter(td.text_content())]*5))))
+            continue
+        if ((len(row) > 1) and (row[1] in ["SH", "RS"])) and td.text_content()[
+            :3
+        ].isdigit():
+            code = td.text_content().split(' ')[0]
+            row.append(code)
+            continue
         if len(td.getchildren()) == 1:
-            if td.find('.//br') is not None:
-                if len(td.getchildren()) == 1:
-                    if td.getchildren()[0].tag == 'br':
-                        td.text = td.text + "," + td.getchildren()[0].tail
-                        row.append(td.text)
-                        continue
+            if (
+                td.find('.//br') is not None
+                and len(td.getchildren()) == 1
+                and td.getchildren()[0].tag == 'br'
+            ):
+                td.text = td.text + "," + td.getchildren()[0].tail
+                row.append(td.text)
+                continue
             if td.find("code") is not None:
                 # some cells contain more than one code,
                 # so append a list also containing the code
@@ -177,8 +172,7 @@ for tr in doc.find_class('o'):
     row_dict = collections.OrderedDict(zip(column_names, row))
     # statoids-assigned 'Entity' name is not really a standard
     row_dict.pop('Entity')
-    table_rows.update({row_dict[alpha2_key]: row_dict})
-
+    table_rows[row_dict[alpha2_key]] = row_dict
 keyed_by = "ISO3166-1-Alpha-3"
 
 # iterate through all the table_rows

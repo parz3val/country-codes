@@ -20,15 +20,13 @@ header = ['EDGAR', 'name']
 data = []
 
 for row in rows:
-    if seen_other_countries is not True:
+    if not seen_other_countries:
         if utils.clean(row.text_content()) != 'Other Countries':
             print('SKIPPING', row.text_content())
-            continue
         else:
             seen_other_countries = True
             print('SEEN OTHER COUNTRIES', row.text_content())
-            continue
-
+        continue
     cells = row.getchildren()
     if len(cells) != 2:
         print('ERROR IN CELL COUNT')
